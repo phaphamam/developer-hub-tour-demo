@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Developer Hub Product Tour Demo (driver.js)</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/driver.js@1.3.1/dist/driver.css">
+<style>
+  :root {
+    --navy: #00247A;
+    --navy-dark: #001c5c;
+    --teal: #108178;
+    --teal-dark: #0c6a62;
+    --mint: #00F19C;
+    --content-bg: #E2E8F0;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #f4f6f9;
+    color: #1a1a1a;
+  }
+
+  .frame {
+    max-width: 1180px;
+    margin: 28px auto;
+    background: #fff;
+    border-radius: 10px;
+    border: 1px solid #d7deea;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    display: flex;
+    min-height: 640px;
+  }
+
+  /* ---- Sidebar (matches real Developer Hub nav) ---- */
+  .sidebar {
+    width: 220px;
+    background: var(--navy);
+    padding: 18px 14px;
+    flex-shrink: 0;
+  }
+  .logo-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 18px;
+    padding: 0 4px;
+  }
+  .logo-mark {
+    width: 22px; height: 22px;
+    background: var(--mint);
+    clip-path: polygon(0 100%, 50% 0, 100% 100%, 65% 100%, 50% 35%, 35% 100%);
+  }
+  .logo-text { color: #fff; font-weight: 800; font-size: 14px; letter-spacing: 0.02em; }
+  .logo-badge { background: var(--mint); color: var(--navy); font-size: 9px; font-weight: 800; padding: 1px 4px; border-radius: 3px; margin-left: 2px; }
+
+  .hub-title { color: #fff; font-weight: 700; font-size: 15px; margin: 10px 4px 14px; }
+
+  .project-pill {
+    background: rgba(255,255,255,0.12);
+    color: #fff;
+    font-size: 11px;
+    border-radius: 6px;
+    padding: 8px 10px;
+    margin-bottom: 16px;
+  }
+  .project-pill .label { opacity: 0.7; font-size: 10px; }
+  .project-pill .name { font-weight: 700; font-size: 13px; }
+
+  .nav-item {
+    color: #cdd6ec;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 9px 10px;
+    border-radius: 6px;
+    margin-bottom: 2px;
+    cursor: default;
+  }
+  .nav-item.active { background: var(--teal); color: #fff; }
+  .nav-section {
+    color: #7a8bc4;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    margin: 14px 10px 4px;
+  }
+
+  /* ---- Content area ---- */
+  .content {
+    flex: 1;
+    background: var(--content-bg);
+    padding: 26px 32px;
+  }
+  .breadcrumb { color: var(--teal); font-size: 13px; font-weight: 600; margin-bottom: 14px; }
+  .panel {
+    background: #fff;
+    border-radius: 8px;
+    border: 1px solid #dbe2ee;
+    padding: 20px 24px;
+    margin-bottom: 18px;
+  }
+  .panel h3 { margin: 0 0 4px; font-size: 15px; display: flex; align-items: center; gap: 8px; }
+  .panel .icon-box {
+    width: 26px; height: 26px; border-radius: 6px;
+    background: #e6f6f3; color: var(--teal);
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 13px;
+  }
+  .panel p.sub { color: #6b7280; font-size: 12.5px; margin: 0 0 16px; }
+
+  .field-row { margin-bottom: 14px; }
+  .field-row label { display: block; font-size: 12px; font-weight: 600; color: var(--teal); margin-bottom: 5px; }
+  .field-row .input {
+    background: #eef1f6; border: 1px solid #dce2ec; border-radius: 6px;
+    padding: 9px 12px; font-size: 13px; color: #374151;
+  }
+
+  .journey {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .journey .step {
+    flex: 1;
+    background: #fff;
+    border: 1px solid #dbe2ee;
+    border-radius: 8px;
+    padding: 14px;
+    text-align: center;
+  }
+  .journey .step .n {
+    width: 24px; height: 24px; border-radius: 50%;
+    background: var(--teal); color: #fff; font-size: 12px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 8px;
+  }
+  .journey .step .t { font-weight: 700; font-size: 13px; margin-bottom: 4px; }
+  .journey .step .d { font-size: 11.5px; color: #6b7280; }
+
+  .deploy-btn {
+    background: var(--teal);
+    color: #fff;
+    border: none;
+    padding: 9px 20px;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  .deploy-btn:hover { background: var(--teal-dark); }
+
+  .top-actions { display: flex; justify-content: flex-end; margin-bottom: 8px; }
+
+  /* ---- driver.js theme: real product colors ---- */
+  .driver-popover.hub-theme {
+    background: var(--navy);
+    color: #fff;
+    border-radius: 10px;
+    padding: 20px;
+    max-width: 330px;
+  }
+  .driver-popover.hub-theme .driver-popover-title {
+    color: #fff;
+    font-size: 16px;
+    font-weight: 700;
+  }
+  .driver-popover.hub-theme .driver-popover-description {
+    color: #cdd6ec;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  .driver-popover.hub-theme .driver-popover-arrow-side-top.driver-popover-arrow { border-top-color: var(--navy); }
+  .driver-popover.hub-theme .driver-popover-arrow-side-bottom.driver-popover-arrow { border-bottom-color: var(--navy); }
+  .driver-popover.hub-theme .driver-popover-arrow-side-left.driver-popover-arrow { border-left-color: var(--navy); }
+  .driver-popover.hub-theme .driver-popover-arrow-side-right.driver-popover-arrow { border-right-color: var(--navy); }
+  .driver-popover.hub-theme button {
+    background: var(--mint);
+    color: var(--navy-dark);
+    border: none;
+    text-shadow: none;
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-weight: 800;
+  }
+  .driver-popover.hub-theme .driver-popover-close-btn { color: #cdd6ec; }
+  .driver-popover.hub-theme .driver-popover-progress-text { color: #93a3d1; }
+
+  .replay-row { text-align: center; margin: 20px 0 30px; }
+  .replay-btn {
+    background: var(--navy);
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-weight: 700;
+    cursor: pointer;
+    font-size: 14px;
+  }
+  .replay-btn:hover { background: var(--navy-dark); }
+</style>
+</head>
+<body>
+
+  <div class="frame">
+    <div class="sidebar">
+      <div class="logo-row">
+        <div class="logo-mark"></div>
+        <span class="logo-text">CASSAVA</span>
+        <span class="logo-badge">ai</span>
+      </div>
+      <div class="hub-title">Developer Hub</div>
+
+      <div class="project-pill">
+        <div class="label">Project</div>
+        <div class="name">defaultproject</div>
+      </div>
+
+      <div class="nav-item" id="nav-home">Home</div>
+      <div class="nav-item">Workspaces</div>
+      <div class="nav-item">Usage</div>
+
+      <div class="nav-section">COMPUTE</div>
+      <div class="nav-item" id="nav-baremetal">Bare Metal</div>
+      <div class="nav-item active" id="nav-vm">Virtual Machines</div>
+
+      <div class="nav-section">CLUSTERS</div>
+      <div class="nav-item">Kubernetes</div>
+      <div class="nav-item">SLURM</div>
+
+      <div class="nav-section">STORAGE</div>
+      <div class="nav-item">High Speed Storage</div>
+
+      <div class="nav-section">AI LAB</div>
+      <div class="nav-item" id="nav-jupyter">Jupyter Notebook</div>
+    </div>
+
+    <div class="content">
+      <div class="breadcrumb">← Back</div>
+
+      <div class="panel" id="journey-panel">
+        <h3><span class="icon-box">⚡</span> From request to working</h3>
+        <p class="sub">No ticket queue in between — the whole flow in one session.</p>
+        <div class="journey">
+          <div class="step"><div class="n">1</div><div class="t">Request</div><div class="d">Pick JupyterHub, GPUaaS or Bare Metal</div></div>
+          <div class="step"><div class="n">2</div><div class="t">Configure</div><div class="d">Set profile, GPU, CPU, memory, storage</div></div>
+          <div class="step"><div class="n">3</div><div class="t">Deploy</div><div class="d">One click — the platform provisions itself</div></div>
+          <div class="step"><div class="n">4</div><div class="t">Working</div><div class="d">Running, training, or SSH'd in — same session</div></div>
+        </div>
+      </div>
+
+      <div class="panel" id="vm-form-panel">
+        <h3><span class="icon-box">⚙</span> New Virtual Machine</h3>
+        <p class="sub">Configure and input required parameters to deploy the Virtual Machine.</p>
+
+        <div class="field-row">
+          <label>Name *</label>
+          <div class="input">mynew</div>
+        </div>
+        <div class="field-row" id="compute-sku-field">
+          <label>Compute SKU</label>
+          <div class="input">4 x H200 GPU VM ✓</div>
+        </div>
+        <div class="field-row">
+          <label>Workspace *</label>
+          <div class="input">test</div>
+        </div>
+
+        <div class="top-actions">
+          <button class="deploy-btn" id="deploy-btn">Deploy</button>
+        </div>
+      </div>
+
+      <div class="replay-row">
+        <button class="replay-btn" id="start-tour">▶ Replay Tour</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/driver.js@1.3.1/dist/driver.js.iife.js"></script>
+  <script>
+    const { driver } = window.driver.js;
+
+    const driverObj = driver({
+      showProgress: true,
+      popoverClass: 'hub-theme',
+      steps: [
+        {
+          element: '#nav-home',
+          popover: {
+            title: 'One Identity, Every Service',
+            description: 'Sign in once with SSO and reach JupyterHub, GPUaaS and Bare Metal from the same Developer Hub.',
+            side: 'right',
+            align: 'start'
+          }
+        },
+        {
+          element: '#journey-panel',
+          popover: {
+            title: 'Request → Configure → Deploy → Working',
+            description: 'From request to onboarding to working in minutes — no ticket queue in between.',
+            side: 'bottom',
+            align: 'start'
+          }
+        },
+        {
+          element: '#nav-vm',
+          popover: {
+            title: 'GPU Virtual Machines',
+            description: 'A GPU virtual machine, launched on demand — pick a profile and go.',
+            side: 'right',
+            align: 'start'
+          }
+        },
+        {
+          element: '#compute-sku-field',
+          popover: {
+            title: 'Pick Your Compute SKU',
+            description: 'Choose the GPU profile — e.g. 4 x H200 — right from the deploy form.',
+            side: 'top',
+            align: 'start'
+          }
+        },
+        {
+          element: '#deploy-btn',
+          popover: {
+            title: 'One-Click Deploy',
+            description: 'The platform provisions itself — no manual setup, no waiting on a ticket.',
+            side: 'left',
+            align: 'start'
+          }
+        },
+        {
+          element: '#nav-jupyter',
+          popover: {
+            title: 'Or Launch a Managed Notebook',
+            description: 'JupyterHub, Bare Metal, or a GPU VM — same self-service flow for every workload.',
+            side: 'right',
+            align: 'start'
+          }
+        }
+      ]
+    });
+
+    document.getElementById('start-tour').addEventListener('click', () => driverObj.drive());
+    window.addEventListener('load', () => driverObj.drive());
+  </script>
+</body>
+</html>
